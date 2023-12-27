@@ -55,6 +55,7 @@ module Hyde
         @page = page
         @site = page.site
         @config = fetch_config
+        @site.data['_hyde_pages_cache'] ||= {}
 
         if keep_files? && !dev_mode?
           @site.config.fetch("keep_files").push(destination)
@@ -65,6 +66,10 @@ module Hyde
         js = fetch_js(@page)
         layout = fetch_layout(fetch_layout_name(@page))
         results = parent_layout_js(layout, js).reverse
+        return if results.empty?
+
+        lookup_name = names_to_key(results)
+        return unless @site.data['_hyde_pages_cache'].fetch(lookup_name, nil).nil?
 
         data = concatenate_files(results)
         return if data == ""
@@ -85,9 +90,16 @@ module Hyde
 
         # assign to site.data.js_files for liquid output
         add_to_urls(generated_file.url)
+
+        # add to cache
+        @site.data['_hyde_pages_cache'][lookup_name] = data
       end
 
       private
+
+      def names_to_key(names)
+        names.join('-')
+      end
 
       def add_to_urls(url)
         @site.data['js_files'] ||= []
