@@ -1,4 +1,4 @@
-require File.expand_path("../lib/hyde-page-js.rb", __FILE__)
+require File.expand_path("./lib/hyde-page-js.rb")
 
 Gem::Specification.new do |s|
   s.name = "hyde-page-js"
@@ -14,5 +14,5 @@ Gem::Specification.new do |s|
   s.require_path = "lib"
 
   s.add_development_dependency "jekyll", ">= 4.0", "< 5.0"
-  s.add_development_dependency "terser", "~> 1.1"
+  s.add_dependency "terser", "~> 1.1"
 end

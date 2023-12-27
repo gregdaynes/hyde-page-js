@@ -9,7 +9,7 @@ Installation
 
 1. Add Hyde Page JS to your Gemfile
 
-`gem 'hyde-page-js', '~> 0.1.0'`
+`gem 'hyde-page-js', '~> 0.2.0'`
 
 2. Add entry to your Jekyll config under plugins
 
@@ -22,7 +22,7 @@ plugins:
 3. Add the liquid tag to your layout
 
 ```liquid
-{%- for file in page.js_files -%}
+{%- for file in site.data.js_files -%}
 <script src="{{ file | prepend: '/' | prepend: site.baseurl }}"></script>
 {%- endfor %}
 ```
@@ -58,21 +58,21 @@ Hyde Page JS comes with the following configuration. Override as necessary in yo
 
 ```yaml
 hyde_page_js:
-  asset_path: assets/js
-  file_output_path: assets/js
-  js_minify: true
+  source: assets/js
+  destination: assets/js
+  minify: true
   enable: true
   keep_files: true
 	dev_mode: false
 ```
 
-`asset_path`
+`source`
 : relative path from the root of your Jekyll directory to the source js file directory
 
-`file_output_path`
+`destination`
 : relative path from the root of your generated site to the location of the generated js files
 
-`js_minify`
+`minify`
 : minify the js generated using [Terser](https://github.com/ahorek/terser-ruby)
 
 `enable`
