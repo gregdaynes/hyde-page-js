@@ -172,6 +172,8 @@ module Hyde
       end
 
       def minify(data)
+        return data unless minify?
+
         converter_config = {mangle: mangle?, output: {comments: :copyright}}
         js_converter = Terser.new(converter_config)
         js_converter.compile(data)
