@@ -2,8 +2,8 @@ require 'terser'
 require 'digest'
 require 'jekyll'
 
-Jekyll::Hooks.register :pages, :pre_render do |page, payload|
-  Hyde::Page::Js.new(page).run
+Jekyll::Hooks.register :pages, :post_init do |page, payload|
+  Hyde::Page::Js.new(page).run if page.instance_of? Jekyll::Page
 end
 
 module Hyde
@@ -65,34 +65,42 @@ module Hyde
       def run
         js = fetch_js(@page)
         layout = fetch_layout(fetch_layout_name(@page))
-        results = parent_layout_js(layout, js).reverse
-        return if results.empty?
+        js_groups = parent_layout_js(layout, js).reverse
+        return if js_groups.empty?
 
-        lookup_name = names_to_key(results)
-        return unless @site.data['_hyde_pages_cache'].fetch(lookup_name, nil).nil?
+        for group in js_groups
+          lookup_name = names_to_key(group)
+          cache_entry = @site.data['_hyde_pages_cache'].fetch(lookup_name, nil)
 
-        data = concatenate_files(results)
-        return if data == ""
+          if cache_entry.nil?
+            data = concatenate_files(group)
+            return if data == ""
 
-        data = minify(data)
-        return if data == ""
+            data = minify(data)
+            return if data == ""
 
-        generated_file = generate_file(results, data)
+            generated_file = generate_file(group, data)
 
-        # file already exists, so skip writing out the data to disk
-        return unless @site.static_files.find { |static_file| static_file.name == generated_file.name }.nil?
+            # file already exists, so skip writing out the data to disk
+            return unless @site.static_files.find { |static_file| static_file.name == generated_file.name }.nil?
 
-        # place file data into the new file
-        generated_file.file_contents = data
+            # place file data into the new file
+            generated_file.file_contents = data
 
-        # assign static file to list for jekyll to render
-        @site.static_files << generated_file
+            # assign static file to list for jekyll to render
+            @site.static_files << generated_file
 
-        # assign to site.data.js_files for liquid output
-        add_to_urls(generated_file.url)
+            # add to cache
+            cache_entry = {
+              "url": generated_file.url,
+              "data": data
+            }
+            @site.data['_hyde_pages_cache'][lookup_name] = cache_entry
+          end
 
-        # add to cache
-        @site.data['_hyde_pages_cache'][lookup_name] = data
+          # assign to site.data.js_files for liquid output
+          add_to_urls(cache_entry.fetch(:url, nil)).compact
+        end
       end
 
       private
@@ -102,8 +110,8 @@ module Hyde
       end
 
       def add_to_urls(url)
-        @site.data['js_files'] ||= []
-        @site.data['js_files'].push(url)
+        @page.data['js_files'] ||= []
+        @page.data['js_files'].push(url)
       end
 
       def fetch_config
@@ -139,7 +147,7 @@ module Hyde
       end
 
       def fetch_js(obj_with_data, default = [])
-        obj_with_data.data.fetch('js', []).reverse
+        [obj_with_data.data.fetch('js', []).reverse]
       end
 
       def fetch_layout(layout_name, default = nil)
@@ -156,7 +164,7 @@ module Hyde
 
       def parent_layout_js(layout, js)
         if layout.nil?
-          return js.uniq.compact
+          return js
         end
 
         layout_name = fetch_layout_name(layout)
