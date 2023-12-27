@@ -5,4 +5,5 @@
 layout: base
 js:
   - log-a.js
+  - index.js
 ---

@@ -147,7 +147,7 @@ module Hyde
       end
 
       def fetch_js(obj_with_data, default = [])
-        [obj_with_data.data.fetch('js', []).reverse]
+        [obj_with_data.data.fetch('js', [])]
       end
 
       def fetch_layout(layout_name, default = nil)
