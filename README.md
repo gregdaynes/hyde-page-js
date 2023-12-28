@@ -9,7 +9,7 @@ Installation
 
 1. Add Hyde Page JS to your Gemfile
 
-`gem 'hyde-page-js', '~> 0.3.2'`
+`gem 'hyde-page-js', '~> 0.3.3'`
 
 2. Add entry to your Jekyll config under plugins
 

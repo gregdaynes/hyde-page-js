@@ -2,14 +2,18 @@ require 'terser'
 require 'digest'
 require 'jekyll'
 
-Jekyll::Hooks.register :pages, :post_init do |page, payload|
+Jekyll::Hooks.register :pages, :post_init do |page|
   Hyde::Page::Js.new(page).run if page.instance_of? Jekyll::Page
+end
+
+Jekyll::Hooks.register :documents, :pre_render do |document|
+  Hyde::Page::Js.new(document).run if document.instance_of? Jekyll::Document
 end
 
 module Hyde
   module Page
     class Js
-      VERSION = "0.3.2"
+      VERSION = "0.3.3"
     end
 
     class GeneratedJsFile < Jekyll::StaticFile
@@ -66,7 +70,7 @@ module Hyde
         js = fetch_js(@page)
         layout = fetch_layout(fetch_layout_name(@page))
         js_groups = parent_layout_js(layout, js).reverse
-        return if js_groups.empty?
+        return if js_groups.flatten.empty?
 
         for group in js_groups
           lookup_name = names_to_key(group)
@@ -74,21 +78,21 @@ module Hyde
 
           if cache_entry.nil?
             data = concatenate_files(group)
-            return if data == ""
+            break if data == ""
 
             data = minify(data)
-            return if data == ""
+            break if data == ""
 
             generated_file = generate_file(group, data)
-
-            # file already exists, so skip writing out the data to disk
-            return unless @site.static_files.find { |static_file| static_file.name == generated_file.name }.nil?
 
             # place file data into the new file
             generated_file.file_contents = data
 
-            # assign static file to list for jekyll to render
-            @site.static_files << generated_file
+            # file doesn't exists, so skip writing out the data to disk
+            if @site.static_files.find { |static_file| static_file.name == generated_file.name }.nil?
+              # assign static file to list for jekyll to render
+              @site.static_files << generated_file
+            end
 
             # add to cache
             cache_entry = {
@@ -99,7 +103,7 @@ module Hyde
           end
 
           # assign to site.data.js_files for liquid output
-          add_to_urls(cache_entry.fetch(:url, nil)).compact
+          add_to_urls(cache_entry&.fetch(:url, nil))
         end
       end
 
