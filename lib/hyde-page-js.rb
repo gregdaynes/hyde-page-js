@@ -13,7 +13,7 @@ end
 module Hyde
   module Page
     class Js
-      VERSION = "0.3.3"
+      VERSION = "0.3.4"
     end
 
     class GeneratedJsFile < Jekyll::StaticFile
@@ -73,6 +73,7 @@ module Hyde
         return if js_groups.flatten.empty?
 
         for group in js_groups
+          next if group.empty?
           lookup_name = names_to_key(group)
           cache_entry = @site.data['_hyde_pages_cache'].fetch(lookup_name, nil)
 
