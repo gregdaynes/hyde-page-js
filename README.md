@@ -9,7 +9,7 @@ Installation
 
 1. Add Hyde Page JS to your Gemfile
 
-`gem 'hyde-page-js', '~> 0.3.3'`
+`gem 'hyde-page-js', '~> 0.4.0'`
 
 2. Add entry to your Jekyll config under plugins
 
@@ -23,7 +23,7 @@ plugins:
 
 ```liquid
 {%- for file in site.data.js_files -%}
-<script src="{{ file | prepend: '/' | prepend: site.baseurl }}"></script>
+<script src="{{ file.path | prepend: '/' | prepend: site.baseurl }}"></script>
 {%- endfor %}
 ```
 
@@ -32,6 +32,20 @@ which will render as the following, based on the number of separate js files.
 ```html
 <script src="/assets/js/7ccd0b378a0983457a529eb1bbb165a5.js"></script>
 ```
+```liquid
+{%- for file in site.data.js_files -%}
+<script>
+  {{ file.content }}
+</script>
+{%- endfor %}
+```
+
+```html
+<script>
+  console.log('hello world');
+</script>
+```
+
 
 4. Add `js:` to your frontmatter.
 

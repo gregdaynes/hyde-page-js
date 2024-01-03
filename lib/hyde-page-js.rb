@@ -13,7 +13,7 @@ end
 module Hyde
   module Page
     class Js
-      VERSION = "0.3.4"
+      VERSION = "0.4.0"
     end
 
     class GeneratedJsFile < Jekyll::StaticFile
@@ -104,7 +104,7 @@ module Hyde
           end
 
           # assign to site.data.js_files for liquid output
-          add_to_urls(cache_entry&.fetch(:url, nil))
+          add_to_urls(cache_entry&.fetch(:url, nil), cache_entry&.fetch(:data, nil))
         end
       end
 
@@ -114,9 +114,9 @@ module Hyde
         names.join('-')
       end
 
-      def add_to_urls(url)
+      def add_to_urls(url, data)
         @page.data['js_files'] ||= []
-        @page.data['js_files'].push(url)
+        @page.data['js_files'].push({ "path" => url, "content" => data })
       end
 
       def fetch_config
