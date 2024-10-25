@@ -13,7 +13,7 @@ end
 module Hyde
   module Page
     class Js
-      VERSION = "0.4.0"
+      VERSION = "0.4.1"
     end
 
     class GeneratedJsFile < Jekyll::StaticFile
